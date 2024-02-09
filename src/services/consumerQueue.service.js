@@ -16,15 +16,31 @@ const messageService = {
         try {
             const { channel, connection } = await connectToRabbitMQ();
             const notiQueue = 'notificationQueueProcess';
-            setTimeout(() => {
-                channel.consume(notiQueue, msg => {
-                    console.log('SEND notification successfully.', msg.content.toString());
+            // setTimeout(() => {
+            //     channel.consume(notiQueue, msg => {
+            //         console.log('SEND notification successfully.', msg.content.toString());
+            //         channel.ack(msg);
+            //     });
+            // }, 15000)
+
+            channel.consume(notiQueue, msg => {
+                try {
+                    const numberTest = Math.random();
+                    console.log({ numberTest });
+                    if (numberTest < 0.8) {
+                        throw new Error('Send notification failed: HOT FIX');
+                    };
+
+                    console.log(`SEND notificationQueue successfully processed.`, msg.content.ToString());
                     channel.ack(msg);
-                });
-            }, 15000)
+                } catch (error) {
+                    channel.nack(msg, false, false);
+                };
+            })
 
         } catch (err) {
             console.log(err);
+            channel.nack(msg, false, false);
         }
     },
 
